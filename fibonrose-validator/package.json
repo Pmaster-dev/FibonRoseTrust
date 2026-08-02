@@ -1,0 +1,26 @@
+{
+  "name": "fibonrose-validator",
+  "version": "1.0.0",
+  "description": "Validates task checkpoints via Fibonacci-inspired confirmation patterns — reusable GitHub Action for the mbtq ecosystem",
+  "type": "module",
+  "main": "src/validator.js",
+  "scripts": {
+    "build": "ncc build src/index.js --out dist --license licenses.txt",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "exports": {
+    ".": "./src/validator.js",
+    "./github-client": "./src/github-client.js"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.3",
+    "@vitest/coverage-v8": "^3.2.4",
+    "vitest": "^3.2.4"
+  }
+}

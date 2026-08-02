@@ -1,0 +1,34 @@
+name: 'Fibonrose Task Validator'
+description: 'Validates task checkpoints via Fibonacci-inspired confirmation patterns. Updates issue checklists and tracks progress toward completion.'
+author: 'Pmaster-dev'
+
+branding:
+  icon: 'check-circle'
+  color: 'purple'
+
+inputs:
+  github-token:
+    description: 'GitHub token for API access (use secrets.GITHUB_TOKEN)'
+    required: true
+  comment-body:
+    description: 'Body of the comment that triggered the action'
+    required: true
+  issue-number:
+    description: 'Number of the issue to validate'
+    required: true
+  label-name:
+    description: 'Base label to watch for (default: fibonrose)'
+    required: false
+    default: 'fibonrose'
+
+outputs:
+  confirmed:
+    description: 'Number of confirmed checkpoints after this run'
+  total:
+    description: 'Total number of checkpoints in the issue'
+  complete:
+    description: '"true" if all checkpoints are now confirmed, "false" otherwise'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

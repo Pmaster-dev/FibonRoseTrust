@@ -1,0 +1,82 @@
+name: Fibonrose Task Validator
+
+on:
+  issue_comment:
+    types: [created, edited]
+  issues:
+    types: [opened, edited, labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  # ── Validate checkpoint confirmations ──────────────────────────────────────
+  validate-fibonrose:
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.issue.labels.*.name, 'fibonrose') ||
+      contains(github.event.comment.body, 'Confirm checkpoint')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Fibonrose Validator
+        id: validator
+        uses: ./fibonrose-validator
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-body: ${{ github.event.comment.body }}
+          issue-number: ${{ github.event.issue.number }}
+
+      - name: Log validation result
+        run: |
+          echo "Confirmed: ${{ steps.validator.outputs.confirmed }}/${{ steps.validator.outputs.total }}"
+          echo "Complete:  ${{ steps.validator.outputs.complete }}"
+
+  # ── Auto-label new Fibonrose issues ───────────────────────────────────────
+  auto-label:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.action == 'opened' &&
+      contains(github.event.issue.body, 'Fibonrose Confirmation Checklist')
+    steps:
+      - name: Add fibonrose labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['fibonrose', 'fibonrose:pending']
+            });
+
+  # ── Notify on full completion ──────────────────────────────────────────────
+  notify-completion:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'fibonrose:completed')
+    steps:
+      - name: Post completion notification (once)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const alreadyNotified = comments.data.some(
+              c => c.body.includes('Task validated through Fibonrose!')
+            );
+            if (!alreadyNotified) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: '### 🌹 Task Completion Notification\n\n' +
+                      '**Congratulations!** This task has been fully validated through the Fibonrose sequence.\n\n' +
+                      'All checkpoints have been confirmed with evidence. This issue can now be safely closed.\n\n' +
+                      'Great work! 🎉🚀'
+              });
+            }
