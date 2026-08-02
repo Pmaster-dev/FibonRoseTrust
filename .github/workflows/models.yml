@@ -1,13 +1,31 @@
 name: Validate AI Models
+
 on:
   push:
     paths:
       - 'models/**'
       - 'src/ai/**'
+  pull_request:
+    paths:
+      - 'models/**'
+      - 'src/ai/**'
+  workflow_dispatch:
+
 jobs:
   test-models:
+    name: Test model inference
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
       - name: Test model inference
         run: npm run test:models

@@ -2,12 +2,14 @@ name: FibonRoseTrust CI/CD
 
 on:
   push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+    branches:
+      - '**'           # Run on every branch push
+    tags-ignore:
+      - '**'           # Tags are handled by release.yml
+  pull_request:        # Run on every PR regardless of target branch
   workflow_dispatch:
 
-# Cancel in-progress runs for the same ref
+# Cancel in-progress runs for the same ref (saves minutes on force-pushes)
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

@@ -1,0 +1,24 @@
+# Code Owners
+# Each line: pattern  @owner
+# Owners are automatically requested for review on matching PRs.
+
+# Global fallback — Pmaster-dev reviews everything
+*                           @Pmaster-dev
+
+# CI/CD and automation
+.github/                    @Pmaster-dev
+
+# Core server
+server/                     @Pmaster-dev
+
+# Frontend
+client/                     @Pmaster-dev
+
+# Shared types / schema
+shared/                     @Pmaster-dev
+
+# fibonrose-validator action
+fibonrose-validator/        @Pmaster-dev
+
+# Blockchain examples
+blockchain_examples/        @Pmaster-dev

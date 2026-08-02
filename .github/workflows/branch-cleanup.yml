@@ -1,0 +1,33 @@
+name: Branch Cleanup
+
+# Automatically deletes the head branch of a PR after it is merged.
+# Uses GH_PAT so it can delete branches owned by the same user — GITHUB_TOKEN
+# cannot delete branches via the API in some org configurations.
+# Required PAT scopes: repo (delete_repo is NOT needed; `repo` covers branch deletion).
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  delete-branch:
+    name: Delete merged branch
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Delete head branch
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          # Never delete protected long-lived branches
+          if [[ "$BRANCH" == "main" || "$BRANCH" == "master" || "$BRANCH" == "develop" ]]; then
+            echo "Skipping protected branch: $BRANCH"
+            exit 0
+          fi
+          echo "Deleting merged branch: $BRANCH"
+          gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/$BRANCH" \
+            --silent || echo "Branch may have already been deleted."
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
